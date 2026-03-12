@@ -1,73 +1,95 @@
 # 📝 Todo App
 
-A full-stack todo application with React frontend, Node.js/Express backend, and Docker deployment.
+A modern, full-stack todo application with beautiful UI, powerful features, and Docker deployment.
 
-## 🚀 Features
+![Todo App](https://img.shields.io/badge/React-18-61dafb?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js)
+![SQLite](https://img.shields.io/badge/SQLite-3-003b57?logo=sqlite)
+![Docker](https://img.shields.io/badge/Docker-✅-2496ed?logo=docker)
 
-- ✅ Create, read, update, delete todos
-- 🏷️ Priority levels (low, medium, high)
+## ✨ Features
+
+### 🎯 Core Features
+- ✅ Create, read, update, delete tasks
+- 🏷️ Priority levels (Low, Medium, High)
 - ✅ Mark tasks as complete/incomplete
-- 📅 Timestamps for creation and updates
-- 🐳 Docker Compose for easy deployment
-- 🔄 CI/CD with GitHub Actions
+- 📅 Automatic timestamps
+
+### 🔍 Smart Organization
+- 🔎 **Search** - Find tasks by title or description
+- 📊 **Filters** - View All, Active, or Completed tasks
+- 📈 **Statistics** - Real-time task counts
+
+### ⚡ Bulk Operations
+- ✓ **Multi-select** - Select multiple tasks
+- ✅ **Bulk complete** - Mark multiple as done
+- 🗑️ **Bulk delete** - Remove multiple at once
+- ⚠️ **Confirmation** - Delete confirmation modal
+
+### 🎨 Modern UI
+- 🌈 Gradient background
+- 💫 Smooth animations
+- 📱 Responsive design
+- 🎯 Intuitive interactions
+- 🌓 Empty states with context
 
 ## 🛠️ Tech Stack
 
-**Backend:**
-- Node.js 20
-- Express.js
-- SQLite (better-sqlite3)
-- CORS enabled
-
 **Frontend:**
-- React 18
-- Vite (fast build tool)
-- No external UI libraries (pure CSS)
+- React 18 with Hooks
+- Vite (Lightning-fast HMR)
+- Pure CSS (no external UI libraries)
+
+**Backend:**
+- Node.js 20+
+- Express.js
+- sql.js (SQLite in memory)
+- CORS enabled
 
 **DevOps:**
 - Docker & Docker Compose
 - GitHub Actions CI/CD
 
-## 📦 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-- Docker & Docker Compose
-- OR Node.js 18+ for local development
-
-### Docker (Recommended)
-
-```bash
-# Start all services
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Stop services
-docker compose down
-
-# Access:
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:3001
-# API Health: http://localhost:3001/api/health
-```
+- Node.js 18+
+- Docker (optional, for containerized deployment)
 
 ### Local Development
 
 ```bash
-# Backend
+# Clone the repository
+git clone https://github.com/yzy123yzy/AI_PRODUCTION.git
+cd AI_PRODUCTION
+
+# Install and start backend
 cd backend
 npm install
-npm run dev
+npm start
 
-# Frontend (in another terminal)
+# In another terminal, install and start frontend
 cd frontend
 npm install
 npm run dev
+```
 
-# Access:
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:3001
+**Access:**
+- Frontend: http://localhost:3000 (or next available port)
+- Backend API: http://localhost:3001
+- Health check: http://localhost:3001/api/health
+
+### Docker Deployment
+
+```bash
+# Build and start all services
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
 ## 📡 API Reference
@@ -117,48 +139,60 @@ DELETE /api/todos/:id
 GET /api/health
 ```
 
-## 🔄 CI/CD
-
-The GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push/PR:
-
-1. **Test Job**: Tests on Node.js 18 & 20
-2. **Build Docker**: Builds and tests Docker images
-3. **Deploy**: Runs only on main branch push
-
-### Manual Deploy
-
-```bash
-# Pull latest images and restart
-docker compose pull
-docker compose up -d
-
-# View deployment status
-docker compose ps
-```
-
 ## 📁 Project Structure
 
 ```
 todo-app/
 ├── backend/
 │   ├── src/
-│   │   └── server.js      # Express API server
+│   │   └── server.js      # Express API with sql.js
 │   ├── package.json
+│   ├── package-lock.json
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── main.jsx       # React entry point
-│   │   └── App.jsx        # Main React component
+│   │   ├── main.jsx       # React entry
+│   │   └── App.jsx        # Main component with full UI
 │   ├── index.html
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── vite.config.js
 │   └── Dockerfile
 ├── .github/
 │   └── workflows/
 │       └── ci.yml         # CI/CD pipeline
 ├── docker-compose.yml
+├── .gitignore
 └── README.md
 ```
+
+## 🔄 CI/CD
+
+GitHub Actions workflow runs on every push/PR:
+
+1. **Test** - Node.js 18 & 20 compatibility
+2. **Build Docker** - Build and test container images
+3. **Deploy** - Auto-deploy notification on main branch
+
+## 🎨 UI Preview
+
+### Statistics Panel
+- Total tasks count
+- Active tasks (yellow highlight)
+- Completed tasks (green highlight)
+
+### Task Card
+- Priority color indicator (🟢 Low, 🟡 Medium, 🔴 High)
+- Checkbox for quick completion
+- Selection checkbox for bulk ops
+- Title and description
+- Priority badge and timestamp
+- Delete button
+
+### Toolbar
+- Filter buttons (All/Active/Completed)
+- Search box with icon
+- Bulk action bar (when items selected)
 
 ## 🔧 Configuration
 
@@ -166,23 +200,23 @@ todo-app/
 
 **Backend:**
 - `PORT` - API port (default: 3001)
-- `DB_PATH` - SQLite database path (default: `/app/data/todos.db`)
-- `NODE_ENV` - Environment (development/production)
+- `DB_PATH` - SQLite database path
+- `NODE_ENV` - Environment mode
 
 **Frontend:**
-- `VITE_API_URL` - Backend API URL (handled by proxy in dev)
+- Handled by Vite proxy in development
 
 ## 🧪 Testing
 
 ```bash
-# Backend tests
-cd backend
-npm test
-
-# Docker integration test
-docker compose up -d
+# Test API
 curl http://localhost:3001/api/health
-docker compose down
+curl http://localhost:3001/api/todos
+
+# Test with sample data
+curl -X POST http://localhost:3001/api/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test","priority":"high"}'
 ```
 
 ## 📝 License
@@ -191,4 +225,6 @@ MIT
 
 ---
 
-Built with ❤️ using OpenClaw
+**Built with ❤️ using OpenClaw**
+
+[View on GitHub](https://github.com/yzy123yzy/AI_PRODUCTION)
