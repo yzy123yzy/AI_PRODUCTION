@@ -9,10 +9,19 @@ function App() {
   const [priority, setPriority] = useState('medium')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [filter, setFilter] = useState('all') // all, active, completed
+  const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [selectedTodos, setSelectedTodos] = useState(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  // Save dark mode preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode))
+  }, [darkMode])
 
   // Fetch todos
   const fetchTodos = async () => {
@@ -173,6 +182,62 @@ function App() {
     high: { bg: '#fee2e2', border: '#ef4444', text: '#991b1b' }
   }
 
+  const priorityColorsDark = {
+    low: { bg: '#14532d', border: '#22c55e', text: '#86efac' },
+    medium: { bg: '#78350f', border: '#f59e0b', text: '#fcd34d' },
+    high: { bg: '#7f1d1d', border: '#ef4444', text: '#fca5a5' }
+  }
+
+  const colors = darkMode ? {
+    bg: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+    header: 'rgba(30, 41, 59, 0.8)',
+    statBg: 'rgba(51, 65, 85, 0.9)',
+    statActive: '#78350f',
+    statCompleted: '#14532d',
+    statNumber: '#f1f5f9',
+    statLabel: '#94a3b8',
+    formBg: '#1e293b',
+    inputBg: '#334155',
+    inputBorder: '#475569',
+    inputText: '#f1f5f9',
+    inputPlaceholder: '#94a3b8',
+    cardBg: '#1e293b',
+    cardText: '#f1f5f9',
+    cardTextMuted: '#94a3b8',
+    toolbarBg: 'rgba(51, 65, 85, 0.3)',
+    searchBg: '#334155',
+    filterBtn: 'rgba(255,255,255,0.1)',
+    filterBtnActive: '#3b82f6',
+    emptyBg: 'rgba(51, 65, 85, 0.5)',
+    modalBg: '#1e293b',
+    modalText: '#f1f5f9',
+    footer: 'rgba(148, 163, 184, 0.7)'
+  } : {
+    bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    header: 'rgba(255,255,255,0.15)',
+    statBg: 'rgba(255,255,255,0.95)',
+    statActive: '#fef3c7',
+    statCompleted: '#dcfce7',
+    statNumber: '#1f2937',
+    statLabel: '#6b7280',
+    formBg: 'white',
+    inputBg: 'white',
+    inputBorder: '#e5e7eb',
+    inputText: '#1f2937',
+    inputPlaceholder: '#9ca3af',
+    cardBg: 'white',
+    cardText: '#1f2937',
+    cardTextMuted: '#6b7280',
+    toolbarBg: 'rgba(255,255,255,0.2)',
+    searchBg: 'white',
+    filterBtn: 'transparent',
+    filterBtnActive: 'white',
+    emptyBg: 'rgba(255,255,255,0.15)',
+    modalBg: 'white',
+    modalText: '#1f2937',
+    footer: 'rgba(255,255,255,0.7)'
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -194,21 +259,28 @@ function App() {
           </h1>
           <p style={styles.subtitle}>Stay organized, get things done</p>
         </div>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={styles.themeToggle}
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
       </header>
 
       {/* Stats */}
       <div style={styles.stats}>
-        <div style={styles.statCard}>
-          <span style={styles.statNumber}>{stats.total}</span>
-          <span style={styles.statLabel}>Total</span>
+        <div style={{...styles.statCard, background: colors.statBg}}>
+          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.total}</span>
+          <span style={{...styles.statLabel, color: colors.statLabel}}>Total</span>
         </div>
-        <div style={{...styles.statCard, ...styles.statActive}}>
-          <span style={styles.statNumber}>{stats.active}</span>
-          <span style={styles.statLabel}>Active</span>
+        <div style={{...styles.statCard, background: colors.statActive}}>
+          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.active}</span>
+          <span style={{...styles.statLabel, color: colors.statLabel}}>Active</span>
         </div>
-        <div style={{...styles.statCard, ...styles.statCompleted}}>
-          <span style={styles.statNumber}>{stats.completed}</span>
-          <span style={styles.statLabel}>Completed</span>
+        <div style={{...styles.statCard, background: colors.statCompleted}}>
+          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.completed}</span>
+          <span style={{...styles.statLabel, color: colors.statLabel}}>Completed</span>
         </div>
       </div>
 
@@ -220,14 +292,19 @@ function App() {
       )}
 
       {/* Add Form */}
-      <form onSubmit={addTodo} style={styles.form}>
+      <form onSubmit={addTodo} style={{...styles.form, background: colors.formBg}}>
         <div style={styles.formRow}>
           <input
             type="text"
             placeholder="What needs to be done?"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            style={styles.input}
+            style={{
+              ...styles.input,
+              background: colors.inputBg,
+              borderColor: colors.inputBorder,
+              color: colors.inputText
+            }}
             required
           />
           <button type="submit" style={styles.addButton}>
@@ -240,12 +317,23 @@ function App() {
             placeholder="Description (optional)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{...styles.input, ...styles.inputDesc}}
+            style={{
+              ...styles.input,
+              ...styles.inputDesc,
+              background: colors.inputBg,
+              borderColor: colors.inputBorder,
+              color: colors.inputText
+            }}
           />
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            style={styles.select}
+            style={{
+              ...styles.select,
+              background: colors.inputBg,
+              borderColor: colors.inputBorder,
+              color: colors.inputText
+            }}
           >
             <option value="low">🟢 Low</option>
             <option value="medium">🟡 Medium</option>
@@ -256,34 +344,49 @@ function App() {
 
       {/* Filters & Search */}
       <div style={styles.toolbar}>
-        <div style={styles.filterGroup}>
+        <div style={{...styles.filterGroup, background: colors.toolbarBg}}>
           <button
             onClick={() => setFilter('all')}
-            style={{...styles.filterBtn, ...(filter === 'all' ? styles.filterBtnActive : {})}}
+            style={{
+              ...styles.filterBtn,
+              background: filter === 'all' ? colors.filterBtnActive : colors.filterBtn,
+              color: filter === 'all' && !darkMode ? '#667eea' : 'white'
+            }}
           >
             All
           </button>
           <button
             onClick={() => setFilter('active')}
-            style={{...styles.filterBtn, ...(filter === 'active' ? styles.filterBtnActive : {})}}
+            style={{
+              ...styles.filterBtn,
+              background: filter === 'active' ? colors.filterBtnActive : colors.filterBtn,
+              color: filter === 'active' && !darkMode ? '#667eea' : 'white'
+            }}
           >
             Active
           </button>
           <button
             onClick={() => setFilter('completed')}
-            style={{...styles.filterBtn, ...(filter === 'completed' ? styles.filterBtnActive : {})}}
+            style={{
+              ...styles.filterBtn,
+              background: filter === 'completed' ? colors.filterBtnActive : colors.filterBtn,
+              color: filter === 'completed' && !darkMode ? '#667eea' : 'white'
+            }}
           >
             Completed
           </button>
         </div>
-        <div style={styles.searchBox}>
+        <div style={{...styles.searchBox, background: colors.searchBg}}>
           <span style={styles.searchIcon}>🔍</span>
           <input
             type="text"
             placeholder="Search tasks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={styles.searchInput}
+            style={{
+              ...styles.searchInput,
+              color: colors.inputText
+            }}
           />
         </div>
       </div>
@@ -307,7 +410,7 @@ function App() {
       {/* Todo List */}
       <div style={styles.list}>
         {filteredTodos.length === 0 ? (
-          <div style={styles.emptyState}>
+          <div style={{...styles.emptyState, background: colors.emptyBg}}>
             <div style={styles.emptyIcon}>
               {search ? '🔍' : filter === 'completed' ? '🎉' : '✨'}
             </div>
@@ -339,9 +442,9 @@ function App() {
                 key={todo.id}
                 style={{
                   ...styles.todo,
-                  opacity: todo.completed ? 0.7 : 1,
-                  borderLeft: `4px solid ${priorityColors[todo.priority].border}`,
-                  background: todo.completed ? '#f9fafb' : 'white'
+                  background: todo.completed ? (darkMode ? '#0f172a' : '#f9fafb') : colors.cardBg,
+                  borderLeft: `4px solid ${darkMode ? priorityColorsDark[todo.priority].border : priorityColors[todo.priority].border}`,
+                  color: colors.cardText
                 }}
               >
                 <input
@@ -360,22 +463,24 @@ function App() {
                   <span style={{
                     ...styles.todoTitle,
                     textDecoration: todo.completed ? 'line-through' : 'none',
-                    color: todo.completed ? '#9ca3af' : '#1f2937'
+                    color: todo.completed ? (darkMode ? '#475569' : '#9ca3af') : colors.cardText
                   }}>
                     {todo.title}
                   </span>
                   {todo.description && (
-                    <span style={styles.todoDesc}>{todo.description}</span>
+                    <span style={{...styles.todoDesc, color: colors.cardTextMuted}}>
+                      {todo.description}
+                    </span>
                   )}
                   <div style={styles.todoMeta}>
                     <span style={{
                       ...styles.priorityBadge,
-                      background: priorityColors[todo.priority].bg,
-                      color: priorityColors[todo.priority].text
+                      background: (darkMode ? priorityColorsDark : priorityColors)[todo.priority].bg,
+                      color: (darkMode ? priorityColorsDark : priorityColors)[todo.priority].text
                     }}>
                       {todo.priority}
                     </span>
-                    <span style={styles.date}>
+                    <span style={{...styles.date, color: colors.cardTextMuted}}>
                       {new Date(todo.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -401,14 +506,11 @@ function App() {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h3 style={styles.modalTitle}>Delete {selectedTodos.size} task(s)?</h3>
-            <p style={styles.modalText}>This action cannot be undone.</p>
+          <div style={{...styles.modal, background: colors.modalBg}}>
+            <h3 style={{...styles.modalTitle, color: colors.modalText}}>Delete {selectedTodos.size} task(s)?</h3>
+            <p style={{...styles.modalText, color: colors.cardTextMuted}}>This action cannot be undone.</p>
             <div style={styles.modalActions}>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                style={styles.modalCancel}
-              >
+              <button onClick={() => setShowDeleteConfirm(false)} style={styles.modalCancel}>
                 Cancel
               </button>
               <button onClick={bulkDelete} style={styles.modalDelete}>
@@ -420,7 +522,7 @@ function App() {
       )}
 
       {/* Footer */}
-      <footer style={styles.footer}>
+      <footer style={{...styles.footer, color: colors.footer}}>
         <span>Made with ❤️ using OpenClaw</span>
       </footer>
     </div>
@@ -430,21 +532,20 @@ function App() {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: '20px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    transition: 'background 0.3s ease'
   },
   header: {
-    background: 'rgba(255,255,255,0.15)',
     backdropFilter: 'blur(10px)',
     borderRadius: '16px',
     padding: '24px',
     marginBottom: '20px',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+    position: 'relative'
   },
   headerContent: {
-    textAlign: 'center',
-    color: 'white'
+    textAlign: 'center'
   },
   title: {
     fontSize: '32px',
@@ -463,6 +564,20 @@ const styles = {
     opacity: 0.9,
     margin: 0
   },
+  themeToggle: {
+    position: 'absolute',
+    top: '20px',
+    right: '20px',
+    background: 'rgba(255,255,255,0.2)',
+    border: 'none',
+    borderRadius: '50%',
+    width: '44px',
+    height: '44px',
+    fontSize: '22px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    backdropFilter: 'blur(5px)'
+  },
   stats: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -470,29 +585,23 @@ const styles = {
     marginBottom: '20px'
   },
   statCard: {
-    background: 'rgba(255,255,255,0.95)',
     borderRadius: '12px',
     padding: '16px',
     textAlign: 'center',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-  },
-  statActive: {
-    background: '#fef3c7'
-  },
-  statCompleted: {
-    background: '#dcfce7'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    transition: 'background 0.3s ease'
   },
   statNumber: {
     display: 'block',
     fontSize: '32px',
     fontWeight: '700',
-    color: '#1f2937'
+    transition: 'color 0.3s ease'
   },
   statLabel: {
     display: 'block',
     fontSize: '14px',
-    color: '#6b7280',
-    marginTop: '4px'
+    marginTop: '4px',
+    transition: 'color 0.3s ease'
   },
   error: {
     background: '#fee2e2',
@@ -515,11 +624,11 @@ const styles = {
     padding: '0 4px'
   },
   form: {
-    background: 'white',
     borderRadius: '16px',
     padding: '20px',
     marginBottom: '20px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    transition: 'background 0.3s ease'
   },
   formRow: {
     display: 'flex',
@@ -529,7 +638,7 @@ const styles = {
   input: {
     flex: '1',
     padding: '14px 18px',
-    border: '2px solid #e5e7eb',
+    border: '2px solid',
     borderRadius: '10px',
     fontSize: '16px',
     transition: 'all 0.2s',
@@ -540,10 +649,9 @@ const styles = {
   },
   select: {
     padding: '14px 18px',
-    border: '2px solid #e5e7eb',
+    border: '2px solid',
     borderRadius: '10px',
     fontSize: '16px',
-    background: 'white',
     cursor: 'pointer',
     outline: 'none'
   },
@@ -573,14 +681,12 @@ const styles = {
   filterGroup: {
     display: 'flex',
     gap: '8px',
-    background: 'rgba(255,255,255,0.2)',
     padding: '6px',
-    borderRadius: '10px'
+    borderRadius: '10px',
+    transition: 'background 0.3s ease'
   },
   filterBtn: {
     padding: '10px 18px',
-    background: 'transparent',
-    color: 'white',
     border: 'none',
     borderRadius: '8px',
     fontSize: '14px',
@@ -588,17 +694,13 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s'
   },
-  filterBtnActive: {
-    background: 'white',
-    color: '#667eea'
-  },
   searchBox: {
     display: 'flex',
     alignItems: 'center',
-    background: 'white',
     borderRadius: '10px',
     padding: '8px 14px',
-    gap: '8px'
+    gap: '8px',
+    transition: 'background 0.3s ease'
   },
   searchIcon: {
     fontSize: '18px'
@@ -607,7 +709,8 @@ const styles = {
     border: 'none',
     outline: 'none',
     fontSize: '14px',
-    width: '200px'
+    width: '200px',
+    background: 'transparent'
   },
   bulkActions: {
     background: 'white',
@@ -671,7 +774,6 @@ const styles = {
     alignItems: 'flex-start',
     gap: '12px',
     padding: '16px',
-    background: 'white',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
     transition: 'all 0.2s'
@@ -697,13 +799,14 @@ const styles = {
     display: 'block',
     fontSize: '16px',
     fontWeight: '500',
-    marginBottom: '4px'
+    marginBottom: '4px',
+    transition: 'color 0.2s'
   },
   todoDesc: {
     display: 'block',
     fontSize: '14px',
-    color: '#6b7280',
-    marginBottom: '8px'
+    marginBottom: '8px',
+    transition: 'color 0.2s'
   },
   todoMeta: {
     display: 'flex',
@@ -719,7 +822,7 @@ const styles = {
   },
   date: {
     fontSize: '12px',
-    color: '#9ca3af'
+    transition: 'color 0.2s'
   },
   deleteBtn: {
     background: 'none',
@@ -733,9 +836,9 @@ const styles = {
   emptyState: {
     textAlign: 'center',
     padding: '60px 20px',
-    background: 'rgba(255,255,255,0.15)',
     borderRadius: '16px',
-    backdropFilter: 'blur(10px)'
+    backdropFilter: 'blur(10px)',
+    transition: 'background 0.3s ease'
   },
   emptyIcon: {
     fontSize: '64px',
@@ -759,21 +862,21 @@ const styles = {
     zIndex: 1000
   },
   modal: {
-    background: 'white',
     borderRadius: '16px',
     padding: '24px',
     maxWidth: '400px',
     width: '90%',
-    textAlign: 'center'
+    textAlign: 'center',
+    transition: 'background 0.3s ease'
   },
   modalTitle: {
     margin: '0 0 12px 0',
     fontSize: '20px',
-    color: '#1f2937'
+    transition: 'color 0.3s ease'
   },
   modalText: {
     margin: '0 0 24px 0',
-    color: '#6b7280'
+    transition: 'color 0.3s ease'
   },
   modalActions: {
     display: 'flex',
@@ -802,13 +905,12 @@ const styles = {
   footer: {
     textAlign: 'center',
     marginTop: '40px',
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: '14px'
+    fontSize: '14px',
+    transition: 'color 0.3s ease'
   },
   loader: {
     textAlign: 'center',
-    padding: '60px 20px',
-    color: 'white'
+    padding: '60px 20px'
   },
   spinner: {
     width: '50px',
