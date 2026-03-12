@@ -17,6 +17,8 @@ function App() {
     const saved = localStorage.getItem('darkMode')
     return saved ? JSON.parse(saved) : false
   })
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
 
   // Save dark mode preference
   useEffect(() => {
@@ -58,6 +60,7 @@ function App() {
       setTitle('')
       setDescription('')
       setPriority('medium')
+      setShowAddModal(false)
     } catch (err) {
       setError(err.message)
     }
@@ -107,15 +110,6 @@ function App() {
       }
       return next
     })
-  }
-
-  // Select all visible
-  const toggleSelectAll = () => {
-    if (selectedTodos.size === filteredTodos.length) {
-      setSelectedTodos(new Set())
-    } else {
-      setSelectedTodos(new Set(filteredTodos.map(t => t.id)))
-    }
   }
 
   // Bulk delete
@@ -189,53 +183,29 @@ function App() {
   }
 
   const colors = darkMode ? {
-    bg: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
-    header: 'rgba(30, 41, 59, 0.8)',
-    statBg: 'rgba(51, 65, 85, 0.9)',
-    statActive: '#78350f',
-    statCompleted: '#14532d',
-    statNumber: '#f1f5f9',
-    statLabel: '#94a3b8',
-    formBg: '#1e293b',
-    inputBg: '#334155',
-    inputBorder: '#475569',
-    inputText: '#f1f5f9',
-    inputPlaceholder: '#94a3b8',
+    bg: '#0f172a',
+    header: '#1e293b',
+    headerText: '#f1f5f9',
     cardBg: '#1e293b',
     cardText: '#f1f5f9',
     cardTextMuted: '#94a3b8',
-    toolbarBg: 'rgba(51, 65, 85, 0.3)',
-    searchBg: '#334155',
-    filterBtn: 'rgba(255,255,255,0.1)',
-    filterBtnActive: '#3b82f6',
-    emptyBg: 'rgba(51, 65, 85, 0.5)',
-    modalBg: '#1e293b',
-    modalText: '#f1f5f9',
-    footer: 'rgba(148, 163, 184, 0.7)'
+    border: '#334155',
+    inputBg: '#334155',
+    inputText: '#f1f5f9',
+    bottomNav: '#1e293b',
+    modalBg: '#1e293b'
   } : {
-    bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    header: 'rgba(255,255,255,0.15)',
-    statBg: 'rgba(255,255,255,0.95)',
-    statActive: '#fef3c7',
-    statCompleted: '#dcfce7',
-    statNumber: '#1f2937',
-    statLabel: '#6b7280',
-    formBg: 'white',
-    inputBg: 'white',
-    inputBorder: '#e5e7eb',
-    inputText: '#1f2937',
-    inputPlaceholder: '#9ca3af',
-    cardBg: 'white',
-    cardText: '#1f2937',
-    cardTextMuted: '#6b7280',
-    toolbarBg: 'rgba(255,255,255,0.2)',
-    searchBg: 'white',
-    filterBtn: 'transparent',
-    filterBtnActive: 'white',
-    emptyBg: 'rgba(255,255,255,0.15)',
-    modalBg: 'white',
-    modalText: '#1f2937',
-    footer: 'rgba(255,255,255,0.7)'
+    bg: '#f1f5f9',
+    header: '#ffffff',
+    headerText: '#1e293b',
+    cardBg: '#ffffff',
+    cardText: '#1e293b',
+    cardTextMuted: '#64748b',
+    border: '#e2e8f0',
+    inputBg: '#ffffff',
+    inputText: '#1e293b',
+    bottomNav: '#ffffff',
+    modalBg: '#ffffff'
   }
 
   if (loading) {
@@ -243,7 +213,6 @@ function App() {
       <div style={styles.container}>
         <div style={styles.loader}>
           <div style={styles.spinner}></div>
-          <p>Loading your tasks...</p>
         </div>
       </div>
     )
@@ -251,280 +220,276 @@ function App() {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <h1 style={styles.title}>
-            <span style={styles.emoji}>📝</span> Todo App
-          </h1>
-          <p style={styles.subtitle}>Stay organized, get things done</p>
-        </div>
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          style={styles.themeToggle}
-          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {darkMode ? '☀️' : '🌙'}
-        </button>
-      </header>
-
-      {/* Stats */}
-      <div style={styles.stats}>
-        <div style={{...styles.statCard, background: colors.statBg}}>
-          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.total}</span>
-          <span style={{...styles.statLabel, color: colors.statLabel}}>Total</span>
-        </div>
-        <div style={{...styles.statCard, background: colors.statActive}}>
-          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.active}</span>
-          <span style={{...styles.statLabel, color: colors.statLabel}}>Active</span>
-        </div>
-        <div style={{...styles.statCard, background: colors.statCompleted}}>
-          <span style={{...styles.statNumber, color: colors.statNumber}}>{stats.completed}</span>
-          <span style={{...styles.statLabel, color: colors.statLabel}}>Completed</span>
+      {/* Status Bar */}
+      <div style={styles.statusBar}>
+        <span style={styles.statusTime}>
+          {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+        </span>
+        <div style={styles.statusIcons}>
+          <span>📶</span>
+          <span>🔋</span>
         </div>
       </div>
 
-      {error && (
-        <div style={styles.error}>
-          <span>⚠️</span> {error}
-          <button onClick={() => setError(null)} style={styles.errorClose}>×</button>
+      {/* Header */}
+      <header style={{...styles.header, background: colors.header}}>
+        <div style={styles.headerLeft}>
+          <h1 style={{...styles.headerTitle, color: colors.headerText}}>
+            📝 Tasks
+          </h1>
+          <span style={{...styles.headerSubtitle, color: colors.cardTextMuted}}>
+            {stats.active} pending
+          </span>
         </div>
-      )}
+        <div style={styles.headerRight}>
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            style={styles.headerBtn}
+          >
+            🔍
+          </button>
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            style={styles.headerBtn}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+        </div>
+      </header>
 
-      {/* Add Form */}
-      <form onSubmit={addTodo} style={{...styles.form, background: colors.formBg}}>
-        <div style={styles.formRow}>
-          <input
-            type="text"
-            placeholder="What needs to be done?"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={{
-              ...styles.input,
-              background: colors.inputBg,
-              borderColor: colors.inputBorder,
-              color: colors.inputText
-            }}
-            required
-          />
-          <button type="submit" style={styles.addButton}>
-            <span>➕</span> Add Task
-          </button>
-        </div>
-        <div style={styles.formRow}>
-          <input
-            type="text"
-            placeholder="Description (optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            style={{
-              ...styles.input,
-              ...styles.inputDesc,
-              background: colors.inputBg,
-              borderColor: colors.inputBorder,
-              color: colors.inputText
-            }}
-          />
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            style={{
-              ...styles.select,
-              background: colors.inputBg,
-              borderColor: colors.inputBorder,
-              color: colors.inputText
-            }}
-          >
-            <option value="low">🟢 Low</option>
-            <option value="medium">🟡 Medium</option>
-            <option value="high">🔴 High</option>
-          </select>
-        </div>
-      </form>
-
-      {/* Filters & Search */}
-      <div style={styles.toolbar}>
-        <div style={{...styles.filterGroup, background: colors.toolbarBg}}>
-          <button
-            onClick={() => setFilter('all')}
-            style={{
-              ...styles.filterBtn,
-              background: filter === 'all' ? colors.filterBtnActive : colors.filterBtn,
-              color: filter === 'all' && !darkMode ? '#667eea' : 'white'
-            }}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setFilter('active')}
-            style={{
-              ...styles.filterBtn,
-              background: filter === 'active' ? colors.filterBtnActive : colors.filterBtn,
-              color: filter === 'active' && !darkMode ? '#667eea' : 'white'
-            }}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setFilter('completed')}
-            style={{
-              ...styles.filterBtn,
-              background: filter === 'completed' ? colors.filterBtnActive : colors.filterBtn,
-              color: filter === 'completed' && !darkMode ? '#667eea' : 'white'
-            }}
-          >
-            Completed
-          </button>
-        </div>
-        <div style={{...styles.searchBox, background: colors.searchBg}}>
+      {/* Search Bar */}
+      {showSearch && (
+        <div style={styles.searchBar}>
           <span style={styles.searchIcon}>🔍</span>
           <input
             type="text"
             placeholder="Search tasks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{
-              ...styles.searchInput,
-              color: colors.inputText
-            }}
+            style={{...styles.searchInput, background: colors.inputBg, color: colors.inputText}}
+            autoFocus
           />
-        </div>
-      </div>
-
-      {/* Bulk Actions */}
-      {selectedTodos.size > 0 && (
-        <div style={styles.bulkActions}>
-          <span style={styles.selectedCount}>{selectedTodos.size} selected</span>
-          <button onClick={bulkComplete} style={styles.bulkBtn}>
-            {todos.filter(t => selectedTodos.has(t.id)).every(t => t.completed) ? '↩️ Mark Active' : '✅ Mark Complete'}
-          </button>
-          <button onClick={() => setShowDeleteConfirm(true)} style={{...styles.bulkBtn, ...styles.bulkBtnDanger}}>
-            🗑️ Delete
-          </button>
-          <button onClick={() => setSelectedTodos(new Set())} style={styles.bulkBtnCancel}>
-            Cancel
-          </button>
+          {search && (
+            <button onClick={() => setSearch('')} style={styles.searchClear}>×</button>
+          )}
         </div>
       )}
 
-      {/* Todo List */}
-      <div style={styles.list}>
-        {filteredTodos.length === 0 ? (
-          <div style={{...styles.emptyState, background: colors.emptyBg}}>
-            <div style={styles.emptyIcon}>
-              {search ? '🔍' : filter === 'completed' ? '🎉' : '✨'}
-            </div>
-            <p style={styles.emptyText}>
-              {search 
-                ? 'No tasks match your search'
-                : filter === 'completed'
-                ? 'No completed tasks yet'
-                : filter === 'active'
-                ? 'All tasks completed! Great job!'
-                : 'No tasks yet. Add one above!'}
-            </p>
+      {/* Filter Tabs */}
+      <div style={styles.filterTabs}>
+        {['all', 'active', 'completed'].map(f => (
+          <button
+            key={f}
+            onClick={() => { setFilter(f); setSearch(''); }}
+            style={{
+              ...styles.filterTab,
+              background: filter === f ? '#667eea' : 'transparent',
+              color: filter === f ? 'white' : colors.cardTextMuted
+            }}
+          >
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'all' && ` (${stats.total})`}
+            {f === 'active' && ` (${stats.active})`}
+            {f === 'completed' && ` (${stats.completed})`}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div style={styles.content}>
+        {error && (
+          <div style={styles.error}>
+            <span>⚠️</span> {error}
+            <button onClick={() => setError(null)} style={styles.errorClose}>×</button>
           </div>
-        ) : (
-          <>
-            <div style={styles.listHeader}>
-              <input
-                type="checkbox"
-                checked={selectedTodos.size === filteredTodos.length && filteredTodos.length > 0}
-                onChange={toggleSelectAll}
-                style={styles.selectAll}
-              />
-              <span style={styles.listHeaderText}>
-                {filteredTodos.length} task{filteredTodos.length !== 1 ? 's' : ''}
-              </span>
+        )}
+
+        {/* Bulk Actions */}
+        {selectedTodos.size > 0 && (
+          <div style={styles.bulkBar}>
+            <span style={styles.bulkCount}>{selectedTodos.size} selected</span>
+            <button onClick={bulkComplete} style={styles.bulkAction}>
+              ✅
+            </button>
+            <button onClick={() => setShowDeleteConfirm(true)} style={styles.bulkAction}>
+              🗑️
+            </button>
+            <button onClick={() => setSelectedTodos(new Set())} style={styles.bulkAction}>
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Task List */}
+        <div style={styles.list}>
+          {filteredTodos.length === 0 ? (
+            <div style={styles.emptyState}>
+              <div style={styles.emptyIcon}>
+                {search ? '🔍' : filter === 'completed' ? '🎉' : '✨'}
+              </div>
+              <p style={styles.emptyText}>
+                {search 
+                  ? 'No matches found'
+                  : filter === 'completed'
+                  ? 'No completed tasks'
+                  : filter === 'active'
+                  ? 'All done! 🎉'
+                  : 'No tasks yet'}
+              </p>
             </div>
-            {filteredTodos.map(todo => (
+          ) : (
+            filteredTodos.map(todo => (
               <div
                 key={todo.id}
                 style={{
-                  ...styles.todo,
-                  background: todo.completed ? (darkMode ? '#0f172a' : '#f9fafb') : colors.cardBg,
-                  borderLeft: `4px solid ${darkMode ? priorityColorsDark[todo.priority].border : priorityColors[todo.priority].border}`,
-                  color: colors.cardText
+                  ...styles.card,
+                  background: colors.cardBg,
+                  borderLeft: `4px solid ${darkMode ? priorityColorsDark[todo.priority].border : priorityColors[todo.priority].border}`
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={selectedTodos.has(todo.id)}
-                  onChange={() => toggleSelection(todo.id)}
-                  style={styles.checkbox}
-                />
-                <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  onChange={() => toggleTodo(todo.id, todo.completed)}
-                  style={styles.completeCheckbox}
-                />
-                <div style={styles.todoContent}>
+                <div style={styles.cardLeft}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTodos.has(todo.id)}
+                    onChange={() => toggleSelection(todo.id)}
+                    style={styles.selectCheckbox}
+                  />
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => toggleTodo(todo.id, todo.completed)}
+                    style={{...styles.completeCheckbox, accentColor: '#667eea'}}
+                  />
+                </div>
+                <div style={styles.cardContent}>
                   <span style={{
-                    ...styles.todoTitle,
-                    textDecoration: todo.completed ? 'line-through' : 'none',
-                    color: todo.completed ? (darkMode ? '#475569' : '#9ca3af') : colors.cardText
+                    ...styles.cardTitle,
+                    color: todo.completed ? colors.cardTextMuted : colors.cardText,
+                    textDecoration: todo.completed ? 'line-through' : 'none'
                   }}>
                     {todo.title}
                   </span>
                   {todo.description && (
-                    <span style={{...styles.todoDesc, color: colors.cardTextMuted}}>
+                    <span style={{...styles.cardDesc, color: colors.cardTextMuted}}>
                       {todo.description}
                     </span>
                   )}
-                  <div style={styles.todoMeta}>
+                  <div style={styles.cardMeta}>
                     <span style={{
-                      ...styles.priorityBadge,
+                      ...styles.priorityTag,
                       background: (darkMode ? priorityColorsDark : priorityColors)[todo.priority].bg,
                       color: (darkMode ? priorityColorsDark : priorityColors)[todo.priority].text
                     }}>
                       {todo.priority}
                     </span>
-                    <span style={{...styles.date, color: colors.cardTextMuted}}>
-                      {new Date(todo.created_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                    <span style={{color: colors.cardTextMuted, fontSize: '12px'}}>
+                      {new Date(todo.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => deleteTodo(todo.id)}
                   style={styles.deleteBtn}
-                  title="Delete task"
                 >
                   🗑️
                 </button>
               </div>
-            ))}
-          </>
-        )}
+            ))
+          )}
+        </div>
       </div>
+
+      {/* Bottom Navigation */}
+      <nav style={{...styles.bottomNav, background: colors.bottomNav, borderTop: `1px solid ${colors.border}`}}>
+        <button style={styles.navItem}>
+          <span style={styles.navIcon}>📊</span>
+          <span style={{...styles.navLabel, color: colors.cardTextMuted}}>Stats</span>
+        </button>
+        <button
+          onClick={() => setShowAddModal(true)}
+          style={styles.addButton}
+        >
+          ➕
+        </button>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={styles.navItem}
+        >
+          <span style={styles.navIcon}>{darkMode ? '☀️' : '🌙'}</span>
+          <span style={{...styles.navLabel, color: colors.cardTextMuted}}>Theme</span>
+        </button>
+      </nav>
+
+      {/* Add Task Modal */}
+      {showAddModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h2 style={{...styles.modalTitle, color: colors.cardText}}>New Task</h2>
+              <button onClick={() => setShowAddModal(false)} style={styles.modalClose}>×</button>
+            </div>
+            <form onSubmit={addTodo}>
+              <input
+                type="text"
+                placeholder="Task title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={{...styles.modalInput, background: colors.inputBg, color: colors.inputText, borderColor: colors.border}}
+                required
+                autoFocus
+              />
+              <input
+                type="text"
+                placeholder="Description (optional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{...styles.modalInput, ...styles.modalTextarea, background: colors.inputBg, color: colors.inputText, borderColor: colors.border}}
+              />
+              <div style={styles.prioritySelector}>
+                {['low', 'medium', 'high'].map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPriority(p)}
+                    style={{
+                      ...styles.priorityOption,
+                      background: priority === p ? '#667eea' : colors.inputBg,
+                      color: priority === p ? 'white' : colors.cardText,
+                      borderColor: priority === p ? '#667eea' : colors.border
+                    }}
+                  >
+                    {p === 'low' && '🟢'}
+                    {p === 'medium' && '🟡'}
+                    {p === 'high' && '🔴'}
+                    {' '}{p}
+                  </button>
+                ))}
+              </div>
+              <button type="submit" style={styles.submitBtn}>
+                Create Task
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div style={styles.modalOverlay}>
-          <div style={{...styles.modal, background: colors.modalBg}}>
-            <h3 style={{...styles.modalTitle, color: colors.modalText}}>Delete {selectedTodos.size} task(s)?</h3>
-            <p style={{...styles.modalText, color: colors.cardTextMuted}}>This action cannot be undone.</p>
-            <div style={styles.modalActions}>
-              <button onClick={() => setShowDeleteConfirm(false)} style={styles.modalCancel}>
+          <div style={{...styles.modalContent, padding: '24px'}}>
+            <h3 style={{...styles.modalTitle, color: colors.cardText}}>Delete {selectedTodos.size} task(s)?</h3>
+            <p style={{...styles.modalDesc, color: colors.cardTextMuted}}>This cannot be undone.</p>
+            <div style={styles.modalButtons}>
+              <button onClick={() => setShowDeleteConfirm(false)} style={{...styles.modalBtn, background: colors.inputBg, color: colors.cardText}}>
                 Cancel
               </button>
-              <button onClick={bulkDelete} style={styles.modalDelete}>
+              <button onClick={bulkDelete} style={{...styles.modalBtn, ...styles.modalBtnDanger}}>
                 Delete
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer style={{...styles.footer, color: colors.footer}}>
-        <span>Made with ❤️ using OpenClaw</span>
-      </footer>
     </div>
   )
 }
@@ -532,87 +497,111 @@ function App() {
 const styles = {
   container: {
     minHeight: '100vh',
-    padding: '20px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    transition: 'background 0.3s ease'
+    maxWidth: '480px',
+    margin: '0 auto',
+    position: 'relative',
+    overflow: 'hidden'
+  },
+  statusBar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 16px',
+    background: '#667eea',
+    color: 'white',
+    fontSize: '14px'
+  },
+  statusTime: {
+    fontWeight: '500'
+  },
+  statusIcons: {
+    display: 'flex',
+    gap: '8px'
   },
   header: {
-    backdropFilter: 'blur(10px)',
-    borderRadius: '16px',
-    padding: '24px',
-    marginBottom: '20px',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-    position: 'relative'
-  },
-  headerContent: {
-    textAlign: 'center'
-  },
-  title: {
-    fontSize: '32px',
-    fontWeight: '700',
-    margin: '0 0 8px 0',
     display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
+    padding: '16px 20px',
+    borderBottom: '1px solid #e2e8f0'
+  },
+  headerLeft: {
+    flex: '1'
+  },
+  headerTitle: {
+    margin: '0 0 4px 0',
+    fontSize: '24px',
+    fontWeight: '700'
+  },
+  headerSubtitle: {
+    fontSize: '14px'
+  },
+  headerRight: {
+    display: 'flex',
     gap: '12px'
   },
-  emoji: {
-    fontSize: '36px'
-  },
-  subtitle: {
-    fontSize: '16px',
-    opacity: 0.9,
-    margin: 0
-  },
-  themeToggle: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    background: 'rgba(255,255,255,0.2)',
+  headerBtn: {
+    background: 'none',
     border: 'none',
-    borderRadius: '50%',
-    width: '44px',
-    height: '44px',
-    fontSize: '22px',
+    fontSize: '20px',
     cursor: 'pointer',
-    transition: 'all 0.2s',
-    backdropFilter: 'blur(5px)'
+    padding: '8px'
   },
-  stats: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '12px',
-    marginBottom: '20px'
-  },
-  statCard: {
-    borderRadius: '12px',
-    padding: '16px',
-    textAlign: 'center',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    transition: 'background 0.3s ease'
-  },
-  statNumber: {
-    display: 'block',
-    fontSize: '32px',
-    fontWeight: '700',
-    transition: 'color 0.3s ease'
-  },
-  statLabel: {
-    display: 'block',
-    fontSize: '14px',
-    marginTop: '4px',
-    transition: 'color 0.3s ease'
-  },
-  error: {
-    background: '#fee2e2',
-    color: '#991b1b',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '15px',
+  searchBar: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    gap: '12px',
+    padding: '12px 20px',
+    borderBottom: '1px solid #e2e8f0'
+  },
+  searchIcon: {
+    fontSize: '18px'
+  },
+  searchInput: {
+    flex: '1',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 14px',
+    fontSize: '16px',
+    outline: 'none'
+  },
+  searchClear: {
+    background: 'none',
+    border: 'none',
+    fontSize: '20px',
+    cursor: 'pointer',
+    color: '#94a3b8'
+  },
+  filterTabs: {
+    display: 'flex',
+    background: '#f1f5f9',
+    padding: '4px',
+    gap: '4px'
+  },
+  filterTab: {
+    flex: '1',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  content: {
+    flex: '1',
+    overflowY: 'auto',
+    paddingBottom: '80px'
+  },
+  error: {
+    margin: '12px 20px',
+    padding: '12px 16px',
+    background: '#fee2e2',
+    color: '#991b1b',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
   },
   errorClose: {
     marginLeft: 'auto',
@@ -620,306 +609,265 @@ const styles = {
     border: 'none',
     fontSize: '20px',
     cursor: 'pointer',
-    color: '#991b1b',
-    padding: '0 4px'
-  },
-  form: {
-    borderRadius: '16px',
-    padding: '20px',
-    marginBottom: '20px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    transition: 'background 0.3s ease'
-  },
-  formRow: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '12px'
-  },
-  input: {
-    flex: '1',
-    padding: '14px 18px',
-    border: '2px solid',
-    borderRadius: '10px',
-    fontSize: '16px',
-    transition: 'all 0.2s',
-    outline: 'none'
-  },
-  inputDesc: {
-    flex: '2'
-  },
-  select: {
-    padding: '14px 18px',
-    border: '2px solid',
-    borderRadius: '10px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    outline: 'none'
-  },
-  addButton: {
-    padding: '14px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '16px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
-  },
-  toolbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-    flexWrap: 'wrap',
-    gap: '12px'
-  },
-  filterGroup: {
-    display: 'flex',
-    gap: '8px',
-    padding: '6px',
-    borderRadius: '10px',
-    transition: 'background 0.3s ease'
-  },
-  filterBtn: {
-    padding: '10px 18px',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s'
-  },
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    borderRadius: '10px',
-    padding: '8px 14px',
-    gap: '8px',
-    transition: 'background 0.3s ease'
-  },
-  searchIcon: {
-    fontSize: '18px'
-  },
-  searchInput: {
-    border: 'none',
-    outline: 'none',
-    fontSize: '14px',
-    width: '200px',
-    background: 'transparent'
-  },
-  bulkActions: {
-    background: 'white',
-    borderRadius: '10px',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-  },
-  selectedCount: {
-    fontWeight: '600',
-    color: '#667eea'
-  },
-  bulkBtn: {
-    padding: '8px 16px',
-    background: '#f3f4f6',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
-  bulkBtnDanger: {
-    background: '#fee2e2',
     color: '#991b1b'
   },
-  bulkBtnCancel: {
-    padding: '8px 16px',
-    background: 'transparent',
-    border: '1px solid #d1d5db',
-    borderRadius: '6px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    marginLeft: 'auto'
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px'
-  },
-  listHeader: {
+  bulkBar: {
+    position: 'sticky',
+    top: '0',
+    margin: '12px 20px',
+    padding: '12px 16px',
+    background: '#667eea',
+    color: 'white',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '8px 0',
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: '14px'
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+    zIndex: '100'
   },
-  selectAll: {
-    width: '18px',
-    height: '18px',
+  bulkCount: {
+    flex: '1',
+    fontWeight: '600'
+  },
+  bulkAction: {
+    background: 'rgba(255,255,255,0.2)',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '16px',
     cursor: 'pointer'
   },
-  listHeaderText: {
-    flex: '1'
+  list: {
+    padding: '12px 20px'
   },
-  todo: {
+  card: {
     display: 'flex',
-    alignItems: 'flex-start',
     gap: '12px',
     padding: '16px',
     borderRadius: '12px',
+    marginBottom: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
     transition: 'all 0.2s'
   },
-  checkbox: {
+  cardLeft: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    paddingTop: '2px'
+  },
+  selectCheckbox: {
     width: '18px',
     height: '18px',
-    marginTop: '2px',
     cursor: 'pointer'
   },
   completeCheckbox: {
     width: '22px',
     height: '22px',
-    marginTop: '1px',
-    cursor: 'pointer',
-    accentColor: '#667eea'
+    cursor: 'pointer'
   },
-  todoContent: {
+  cardContent: {
     flex: '1',
     minWidth: 0
   },
-  todoTitle: {
+  cardTitle: {
     display: 'block',
     fontSize: '16px',
     fontWeight: '500',
-    marginBottom: '4px',
-    transition: 'color 0.2s'
+    marginBottom: '4px'
   },
-  todoDesc: {
+  cardDesc: {
     display: 'block',
     fontSize: '14px',
-    marginBottom: '8px',
-    transition: 'color 0.2s'
+    marginBottom: '8px'
   },
-  todoMeta: {
+  cardMeta: {
     display: 'flex',
-    gap: '10px',
+    gap: '8px',
     alignItems: 'center'
   },
-  priorityBadge: {
-    padding: '3px 10px',
-    borderRadius: '12px',
-    fontSize: '12px',
+  priorityTag: {
+    padding: '2px 8px',
+    borderRadius: '6px',
+    fontSize: '11px',
     fontWeight: '600',
     textTransform: 'capitalize'
-  },
-  date: {
-    fontSize: '12px',
-    transition: 'color 0.2s'
   },
   deleteBtn: {
     background: 'none',
     border: 'none',
-    fontSize: '20px',
+    fontSize: '18px',
     cursor: 'pointer',
-    padding: '4px',
-    opacity: 0.5,
-    transition: 'opacity 0.2s'
+    padding: '8px',
+    opacity: '0.5'
   },
   emptyState: {
     textAlign: 'center',
-    padding: '60px 20px',
-    borderRadius: '16px',
-    backdropFilter: 'blur(10px)',
-    transition: 'background 0.3s ease'
+    padding: '60px 20px'
   },
   emptyIcon: {
     fontSize: '64px',
     marginBottom: '16px'
   },
   emptyText: {
-    color: 'white',
-    fontSize: '18px',
+    color: '#94a3b8',
+    fontSize: '16px',
     margin: 0
+  },
+  bottomNav: {
+    position: 'fixed',
+    bottom: '0',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '100%',
+    maxWidth: '480px',
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: '12px 0',
+    paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+    borderTop: '1px solid #e2e8f0'
+  },
+  navItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '4px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px 16px'
+  },
+  navIcon: {
+    fontSize: '24px'
+  },
+  navLabel: {
+    fontSize: '11px'
+  },
+  addButton: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    border: 'none',
+    borderRadius: '50%',
+    width: '56px',
+    height: '56px',
+    fontSize: '28px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+    transform: 'translateY(-12px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   modalOverlay: {
     position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: '0',
+    left: '0',
+    right: '0',
+    bottom: '0',
     background: 'rgba(0,0,0,0.5)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000
+    alignItems: 'flex-end',
+    zIndex: '1000'
   },
-  modal: {
-    borderRadius: '16px',
-    padding: '24px',
-    maxWidth: '400px',
-    width: '90%',
-    textAlign: 'center',
-    transition: 'background 0.3s ease'
+  modalContent: {
+    background: 'white',
+    width: '100%',
+    maxWidth: '480px',
+    margin: '0 auto',
+    borderRadius: '20px 20px 0 0',
+    padding: '24px'
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px'
   },
   modalTitle: {
-    margin: '0 0 12px 0',
+    margin: '0',
     fontSize: '20px',
-    transition: 'color 0.3s ease'
-  },
-  modalText: {
-    margin: '0 0 24px 0',
-    transition: 'color 0.3s ease'
-  },
-  modalActions: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'center'
-  },
-  modalCancel: {
-    padding: '12px 24px',
-    background: '#f3f4f6',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
-  modalDelete: {
-    padding: '12px 24px',
-    background: '#ef4444',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    cursor: 'pointer',
     fontWeight: '600'
   },
-  footer: {
-    textAlign: 'center',
-    marginTop: '40px',
+  modalClose: {
+    background: 'none',
+    border: 'none',
+    fontSize: '28px',
+    cursor: 'pointer',
+    color: '#94a3b8'
+  },
+  modalInput: {
+    width: '100%',
+    padding: '14px 16px',
+    border: '2px solid',
+    borderRadius: '12px',
+    fontSize: '16px',
+    marginBottom: '12px',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  modalTextarea: {
+    minHeight: '80px',
+    resize: 'vertical'
+  },
+  prioritySelector: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '20px'
+  },
+  priorityOption: {
+    flex: '1',
+    padding: '12px',
+    border: '2px solid',
+    borderRadius: '10px',
     fontSize: '14px',
-    transition: 'color 0.3s ease'
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+  },
+  submitBtn: {
+    width: '100%',
+    padding: '16px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
+  modalDesc: {
+    margin: '0 0 24px 0',
+    fontSize: '14px'
+  },
+  modalButtons: {
+    display: 'flex',
+    gap: '12px'
+  },
+  modalBtn: {
+    flex: '1',
+    padding: '14px',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '16px',
+    fontWeight: '500',
+    cursor: 'pointer'
+  },
+  modalBtnDanger: {
+    background: '#ef4444',
+    color: 'white'
   },
   loader: {
-    textAlign: 'center',
-    padding: '60px 20px'
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh'
   },
   spinner: {
-    width: '50px',
-    height: '50px',
-    border: '4px solid rgba(255,255,255,0.3)',
-    borderTop: '4px solid white',
+    width: '40px',
+    height: '40px',
+    border: '4px solid #e2e8f0',
+    borderTop: '4px solid #667eea',
     borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
-    margin: '0 auto 20px'
+    animation: 'spin 1s linear infinite'
   }
 }
 
